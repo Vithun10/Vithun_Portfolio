@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* ==============================================================
+     REQUIRED BROWN & PALE-YELLOW PALETTE HIERARCHY
+     ==============================================================
+     Primary Brown:            #6B352A
+     Deep Brown Background:    #3B211B
+     Secondary Brown Surface:  #4A2922
+     Lighter Brown Surface:    #824B3D
+     Pale Yellow Accent:       #FFF1A6
+     Warm Light Text:          #F7EEDB
+     Muted Supporting Text:    #C9B8A8
+     
+     ORIGINAL BLACK-AND-RED PALETTE (FOR 100% INSTANT ROLLBACK):
+       Original Primary Red:     #E50914
+       Original Red Dark:        #B20710
+       Original Red Hover:       #DC2626
+       Original Background:      #050505
+       Original Card Surface:    #141414
+       Original Red Utility Scale:
+         --color-red-400: #f87171;
+         --color-red-500: #ef4444;
+         --color-red-600: #dc2626;
+         --color-red-700: #b91c1c;
+         --color-red-800: #991b1b;
+         --color-red-900: #7f1d1d;
+  */
+
+  /* Brand Palette Tokens */
+  --color-primary-brown: #6B352A;
+  --color-bg-deep: #3B211B;
+  --color-surface-secondary: #4A2922;
+  --color-surface-lighter: #824B3D;
+  --color-accent-yellow: #FFF1A6;
+  --color-text-warm: #F7EEDB;
+  --color-text-muted: #C9B8A8;
+
+  /* Red scale utility mapping for instant thematic cohesion */
+  --color-red-300: #FAF3D2;
+  --color-red-400: #FFF1A6; /* Pale Yellow Accent */
+  --color-red-500: #FFF1A6; /* Pale Yellow Accent */
+  --color-red-600: #6B352A; /* Primary Brown */
+  --color-red-700: #824B3D; /* Lighter Brown Surface / Hover */
+  --color-red-800: #4A2922; /* Secondary Brown Surface */
+  --color-red-900: #3B211B; /* Deep Brown Background */
+}
+
+:root {
+  --theme-primary-brown: #6B352A;
+  --theme-bg-deep: #3B211B;
+  --theme-surface-secondary: #4A2922;
+  --theme-surface-lighter: #824B3D;
+  --theme-accent-yellow: #FFF1A6;
+  --theme-text-warm: #F7EEDB;
+  --theme-text-muted: #C9B8A8;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #3B211B;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #3B211B;
+  color: #F7EEDB;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Custom Scrollbar - Rich Brown & Pale Yellow */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #3B211B;
+}
+::-webkit-scrollbar-thumb {
+  background: #6B352A;
+  border-radius: 5px;
+  border: 2px solid #3B211B;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #824B3D;
+}
+
+/* Global Selection Highlight */
+::selection {
+  background-color: #6B352A;
+  color: #FFF1A6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
