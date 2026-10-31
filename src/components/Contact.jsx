@@ -48,7 +48,7 @@ const Contact = () => {
     }
   };
 
-  // Server-side Web3Forms submission logic
+  // Direct client-side Web3Forms submission logic
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -83,6 +83,15 @@ const Contact = () => {
       return;
     }
 
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY?.trim();
+    if (!accessKey) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Contact service is temporarily misconfigured. Please reach out directly at vithun2701@gmail.com.'
+      });
+      return;
+    }
+
     setErrors({});
     setIsSubmitting(true);
     setStatusMessage({
@@ -92,17 +101,19 @@ const Contact = () => {
 
     try {
       const senderFullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
-      const response = await fetch('/api/contact', {
+      const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
+          access_key: accessKey,
           name: senderFullName,
           email: formData.email.trim(),
-          subject: formData.subject.trim() || 'Operations & Analytics Discussion',
+          subject: `[Portfolio Inquiry] ${formData.subject.trim() || 'Operations & Analytics Discussion'}`,
           message: formData.message.trim(),
+          from_name: 'Portfolio Contact Form',
           botcheck: formData.botcheck || ''
         })
       });
