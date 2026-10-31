@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -48,9 +48,17 @@ const Skills = () => {
   const cardsRef = useRef([]);
   const tickingRef = useRef(false);
   const lastActiveRef = useRef(-1);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
 
   const handleScroll = (e) => {
-    if (window.innerWidth >= 769 || tickingRef.current) return;
+    if (window.innerWidth >= 769) return;
+
+    // Immediately hide swipe indicator as soon as user begins horizontal interaction
+    if (showSwipeHint && e.target && e.target.scrollLeft > 15) {
+      setShowSwipeHint(false);
+    }
+
+    if (tickingRef.current) return;
     tickingRef.current = true;
     const container = e.target;
 
@@ -244,6 +252,28 @@ const Skills = () => {
             <div className="absolute bottom-4 right-4 w-2 h-2 rounded-full bg-[#FFF1A6] group-hover:shadow-[0_0_15px_#FFF1A6] transition-all" />
           </div>
         ))}
+      </div>
+
+      {/* Mobile Horizontal Scroll Indicator (Swipe Hint) */}
+      <div 
+        className={`md:hidden absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-20 flex flex-col items-end justify-center pr-3 bg-gradient-to-l from-[#3B211B] via-[#3B211B]/60 to-transparent transition-opacity duration-500 ease-out ${
+          showSwipeHint ? 'opacity-100' : 'opacity-0'
+        }`}
+        aria-hidden="true"
+      >
+        <div className="flex flex-col items-center gap-2 animate-pulse">
+          <div className="w-8 h-8 rounded-full bg-[#4A2922] border border-[#6B352A] shadow-[0_4px_16px_rgba(30,15,12,0.8)] flex items-center justify-center">
+            <svg 
+              className="w-4 h-4 text-[#FFF1A6] stroke-current stroke-2 fill-none ml-0.5" 
+              viewBox="0 0 24 24"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+          <span className="text-[7.5px] font-mono tracking-widest uppercase text-[#FFF1A6] font-bold [writing-mode:vertical-rl]">
+            SWIPE TO EXPLORE
+          </span>
+        </div>
       </div>
 
     </section>
