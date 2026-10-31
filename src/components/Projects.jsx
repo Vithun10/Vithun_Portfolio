@@ -177,66 +177,28 @@ const Projects = () => {
         }, "-=0.2");
       });
 
-      // MOBILE TOUCH TIMELINE (Exact Two Projects)
+      // MOBILE VERTICAL STACK TIMELINE (FLOW then TRIAGE)
       mm.add("(max-width: 768px)", () => {
-        gsap.set([folderBackRef.current, folderFrontRef.current], {
-          xPercent: -50,
-          yPercent: -50
-        });
-
-        if (mobileCardsRef.current.length > 0 && mobileCardsRef.current[0]) {
-          const cardW = mobileCardsRef.current[0].offsetWidth || 300;
-          const gap = 24;
-
-          mobileCardsRef.current.forEach((card, i) => {
-            if (!card) return;
-            gsap.set(card, {
-              x: -(i * (cardW + gap)), 
-              y: 0,
-              scale: 0.4,
-              opacity: 0,
-              rotation: gsap.utils.random(-8, 8)
-            });
+        const cards = mobileCardsRef.current.filter(Boolean);
+        if (cards.length > 0) {
+          gsap.set(cards, {
+            clearProps: "transform,opacity",
+            opacity: 0,
+            y: 30
           });
 
-          const tl = gsap.timeline({
+          gsap.to(cards, {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            stagger: 0.18,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: containerRef.current,
-              start: "top 60%",
+              start: "top 75%",
+              toggleActions: "play none none none"
             }
           });
-
-          tl.to(folderFrontRef.current, {
-            rotationX: -130,
-            duration: 0.8,
-            ease: "power3.inOut"
-          });
-
-          tl.to(mobileCardsRef.current, {
-            y: -100,
-            opacity: 1,
-            scale: 0.85,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: "back.out(1.2)"
-          }, "-=0.4");
-
-          tl.to(mobileCardsRef.current, {
-            x: 0,
-            y: 0,
-            rotation: 0,
-            scale: (i) => i === 0 ? 1 : 0.94,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.1,
-            ease: "expo.out",
-            onComplete: () => {
-              if (mobileCarouselRef.current) {
-                mobileCarouselRef.current.style.overflowX = 'auto';
-                mobileCarouselRef.current.style.pointerEvents = 'auto';
-              }
-            }
-          }, "-=0.2");
         }
       });
     }, containerRef);
@@ -255,7 +217,7 @@ const Projects = () => {
   };
 
   return (
-    <section id="projects" ref={containerRef} className="bg-[#3B211B] min-h-[100svh] md:min-h-[170vh] relative font-sans overflow-x-clip text-[#F7EEDB] w-full flex flex-col items-center justify-start py-20 md:py-32 select-none">
+    <section id="projects" ref={containerRef} className="bg-[#3B211B] min-h-screen md:min-h-[170vh] relative font-sans overflow-x-clip text-[#F7EEDB] w-full flex flex-col items-center justify-start py-16 md:py-32 select-none">
       
       {/* Background Watermark in Warm Brown */}
       <div className="absolute top-10 left-0 w-full flex items-start justify-center pointer-events-none z-0">
@@ -286,8 +248,8 @@ const Projects = () => {
         </p>
       </div>
 
-      {/* Main Perspective Container - Centered Symmetrically */}
-      <div className="relative w-full max-w-7xl flex items-center justify-center perspective-[2000px] z-10 min-h-[460px] md:min-h-[580px]">
+      {/* Main Perspective Container - Centered Symmetrically (Desktop Only) */}
+      <div className="hidden md:flex relative w-full max-w-7xl items-center justify-center perspective-[2000px] z-10 min-h-[580px]">
         
         {/* Origin Container */}
         <div className="relative w-0 h-0 transform-style-3d">
@@ -393,24 +355,20 @@ const Projects = () => {
         </div>
       </div>
 
-      {/* Mobile Swipeable Carousel (Exactly Two Case Studies) */}
+      {/* Mobile Vertical Stack (FLOW then TRIAGE in normal document flow) */}
       <div 
         ref={mobileCarouselRef}
-        className="md:hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-auto py-12 flex items-center gap-6 px-[9vw] pointer-events-none z-[100] snap-x snap-mandatory overflow-x-hidden hide-scrollbar"
+        className="md:hidden relative w-full px-5 flex flex-col items-center gap-6 z-20"
       >
-        <style>{`
-          .hide-scrollbar::-webkit-scrollbar { display: none; }
-          .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
         {projectsData.map((project, i) => (
           <div 
             key={`mob-${project.id}`}
             id={`mob-project-card-${project.id}`}
             ref={el => mobileCardsRef.current[i] = el}
             onClick={() => handleOpenDetail(project)}
-            className="shrink-0 w-[82vw] aspect-[16/18] snap-center will-change-transform relative z-10 cursor-pointer"
+            className="w-full max-w-[420px] will-change-transform relative z-10 cursor-pointer"
           >
-            <div className="w-full h-full rounded-[24px] overflow-hidden border border-[#6B352A] bg-gradient-to-br from-[#4A2922] via-[#3E221C] to-[#331B16] p-5 flex flex-col justify-between shadow-[0_20px_40px_rgba(30,15,12,0.9)]">
+            <div className="w-full rounded-[24px] overflow-hidden border border-[#6B352A] bg-gradient-to-br from-[#4A2922] via-[#3E221C] to-[#331B16] p-5 flex flex-col justify-between shadow-[0_20px_40px_rgba(30,15,12,0.9)] hover:border-[#FFF1A6]/80 transition-all duration-300">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[10px] font-mono font-bold tracking-widest text-[#FFF1A6] bg-[#6B352A] px-2 py-0.5 rounded border border-[#FFF1A6]/30">
                   {project.caseBadge}
@@ -422,7 +380,7 @@ const Projects = () => {
               </div>
 
               {/* Mobile Primary Image */}
-              <div className="relative w-full h-[140px] rounded-xl overflow-hidden border border-[#6B352A] my-2 bg-[#2E1813]">
+              <div className="relative w-full h-[160px] sm:h-[180px] rounded-xl overflow-hidden border border-[#6B352A] my-3 bg-[#2E1813]">
                 <img
                   src={project.primaryImage}
                   alt={project.title}
@@ -430,18 +388,23 @@ const Projects = () => {
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5 mb-3">
                 <div className="text-[9px] font-mono uppercase text-[#C9B8A8]">{project.subtitle}</div>
-                <h3 className="text-base font-black text-[#F7EEDB] leading-tight">{project.title}</h3>
+                <h3 className="text-base sm:text-lg font-black text-[#F7EEDB] leading-tight">{project.title}</h3>
                 <p className="text-xs text-[#F7EEDB]/90 font-light line-clamp-2">{project.summary}</p>
               </div>
 
-              <div className="flex flex-wrap gap-1 pt-2 border-t border-[#6B352A]/60">
-                {project.tags.slice(0, 3).map((tag, tIdx) => (
-                  <span key={tIdx} className="text-[9px] font-mono text-[#FFF1A6] bg-[#3B211B] border border-[#6B352A] px-2 py-0.5 rounded">
-                    {tag}
-                  </span>
-                ))}
+              <div className="flex flex-wrap gap-1 pt-2.5 border-t border-[#6B352A]/60 items-center justify-between">
+                <div className="flex flex-wrap gap-1">
+                  {project.tags.slice(0, 3).map((tag, tIdx) => (
+                    <span key={tIdx} className="text-[9px] font-mono text-[#FFF1A6] bg-[#3B211B] border border-[#6B352A] px-2 py-0.5 rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-[10px] font-mono text-[#FFF1A6] font-bold uppercase tracking-wider">
+                  Explore Case &rarr;
+                </span>
               </div>
             </div>
           </div>
