@@ -52,7 +52,7 @@ const Skills = () => {
   const showSwipeHintRef = useRef(true);
 
   const handleScroll = (e) => {
-    if (window.innerWidth >= 769) return;
+    if (window.innerWidth >= 768) return;
 
     // Position-dependent swipe hint: visible only near carousel start (tolerance ~15px)
     const scrollLeft = e.target?.scrollLeft ?? 0;
@@ -100,7 +100,7 @@ const Skills = () => {
     let ctx = gsap.context(() => {
       let mm = gsap.matchMedia();
 
-      mm.add("(min-width: 769px)", () => {
+      mm.add("(min-width: 768px)", () => {
         // Pre-allocate quickSetters to eliminate GSAP object allocation on every scroll tick
         const cardSetters = cardsRef.current.map(card => {
           if (!card) return null;
@@ -171,7 +171,7 @@ const Skills = () => {
         });
       });
 
-      mm.add("(max-width: 768px)", () => {
+      mm.add("(max-width: 767px)", () => {
         cardsRef.current.forEach((card, i) => {
           if (card) {
             gsap.set(card, { clearProps: "x,y,z,rotation,scale,opacity,position" });

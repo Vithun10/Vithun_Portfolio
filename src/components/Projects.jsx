@@ -119,7 +119,7 @@ const Projects = () => {
       let mm = gsap.matchMedia();
 
       // DESKTOP FOLDER OPENING ANIMATION (Exact Two Projects)
-      mm.add("(min-width: 769px)", () => {
+      mm.add("(min-width: 768px)", () => {
         gsap.set([folderBackRef.current, folderFrontRef.current], {
           xPercent: -50,
           yPercent: -50
@@ -178,7 +178,7 @@ const Projects = () => {
       });
 
       // MOBILE VERTICAL STACK TIMELINE (FLOW then TRIAGE)
-      mm.add("(max-width: 768px)", () => {
+      mm.add("(max-width: 767px)", () => {
         const cards = mobileCardsRef.current.filter(Boolean);
         if (cards.length > 0) {
           gsap.set(cards, {

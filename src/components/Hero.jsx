@@ -24,8 +24,38 @@ const Hero = () => {
     const content = contentRef.current;
     if (!section || !card || !content) return;
 
+    let hasCompleted = false;
+    let fallbackTimer = null;
+
+    // Fail-safe visibility guarantee: ensures Hero content is never left at opacity 0
+    const makeHeroVisible = () => {
+      if (hasCompleted) return;
+      hasCompleted = true;
+
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
+
+      const header = section.querySelector('header');
+      const animItems = content.querySelectorAll('.hero-anim-item');
+
+      if (header) gsap.set(header, { opacity: 1, y: 0 });
+      if (animItems && animItems.length) gsap.set(animItems, { opacity: 1, y: 0, clearProps: 'filter' });
+      if (card) gsap.set(card, { opacity: 1, scale: 1, rotationY: 0, rotationX: 0 });
+    };
+
     // --- GSAP CINEMATIC ENTRANCE ANIMATION ---
-    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+    const tl = gsap.timeline({
+      defaults: { ease: "power4.out" },
+      onComplete: () => {
+        hasCompleted = true;
+        if (fallbackTimer) {
+          clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
+      }
+    });
 
     tl.fromTo(
       section.querySelector('header'),
@@ -44,6 +74,9 @@ const Hero = () => {
       { scale: 1, opacity: 1, rotationY: 0, rotationX: 0, duration: 1.2, ease: "back.out(1.2)" },
       "-=0.8"
     );
+
+    // Defensive fallback: guarantees hero content becomes visible even if WebKit drops animation ticks
+    fallbackTimer = setTimeout(makeHeroVisible, 2500);
 
     // --- OPTIMIZED 3D TILT WITH CACHED GEOMETRY (NO LAYOUT REFLOW) ---
     const xTilt = gsap.quickTo(card, "rotationY", { duration: 0.4, ease: "power3.out" });
@@ -106,6 +139,8 @@ const Hero = () => {
     section.addEventListener("mouseleave", handleMouseLeave, { passive: true });
 
     return () => {
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      tl.kill();
       if (observer) observer.disconnect();
       window.removeEventListener("resize", updateGeometry);
       section.removeEventListener("mousemove", handleMouseMove);
@@ -118,7 +153,7 @@ const Hero = () => {
     <section
       id="home"
       ref={sectionRef}
-      className="relative w-full min-h-screen lg:h-screen lg:overflow-hidden bg-[#3B211B] text-[#F7EEDB] flex flex-col justify-between select-none cursor-none overflow-x-hidden"
+      className="relative w-full min-h-screen bg-[#3B211B] text-[#F7EEDB] flex flex-col justify-between select-none cursor-none overflow-x-clip"
     >
       <style>{`
         @keyframes marquee {
@@ -218,7 +253,7 @@ const Hero = () => {
           <div className="lg:col-span-4 flex justify-center perspective-[1200px]">
             <div 
               ref={cardRef}
-              className="relative group transform-gpu transition-transform duration-100 ease-out will-change-transform"
+              className="relative group transform-gpu will-change-transform"
             >
               {/* Rich Warm Brown & Amber Back Glow */}
               <div className="absolute -inset-3 bg-gradient-to-r from-[#6B352A]/90 via-[#824B3D]/70 to-[#FFF1A6]/30 rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-opacity duration-700"></div>
