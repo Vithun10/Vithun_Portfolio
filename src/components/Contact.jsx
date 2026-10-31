@@ -12,12 +12,14 @@ const Contact = () => {
     email: '',
     subject: 'Operations & Analytics Discussion',
     message: '',
-    permission: false
+    permission: false,
+    botcheck: ''
   });
 
   // Validation & Submission State
   const [errors, setErrors] = useState({});
   const [statusMessage, setStatusMessage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -46,9 +48,11 @@ const Contact = () => {
     }
   };
 
-  // Form submission logic with honest mailto composition
-  const handleSubmit = (e) => {
+  // Server-side Web3Forms submission logic
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const newErrors = {};
 
     // Validate fields
@@ -80,33 +84,64 @@ const Contact = () => {
     }
 
     setErrors({});
-
-    // Construct formatted email body
-    const senderFullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
-    const emailSubject = formData.subject.trim() || 'Business Operations Inquiry';
-    const emailBody = 
-`Hi Vithun,
-
-${formData.message.trim()}
-
----
-Sender Details:
-Name: ${senderFullName}
-Email: ${formData.email.trim()}`;
-
-    const mailtoUrl = `mailto:vithun2701@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-
-    // Honest feedback: Explain that the email client is being triggered
+    setIsSubmitting(true);
     setStatusMessage({
       type: 'info',
-      text: 'Opening your default email client with your prefilled message. Please click "Send" in your mail application to dispatch the email to vithun2701@gmail.com.'
+      text: 'Dispatching message to secure transmission gateway...'
     });
 
-    // Track email interaction
-    trackEvent('email_click');
+    try {
+      const senderFullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: senderFullName,
+          email: formData.email.trim(),
+          subject: formData.subject.trim() || 'Operations & Analytics Discussion',
+          message: formData.message.trim(),
+          botcheck: formData.botcheck || ''
+        })
+      });
 
-    // Trigger the email client
-    window.location.href = mailtoUrl;
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.success) {
+        setStatusMessage({
+          type: 'success',
+          text: data?.message || 'Your message has been sent successfully. Thank you for connecting!'
+        });
+
+        // Track verified contact submission (zero PII)
+        trackEvent('contact_submit');
+
+        // Clear the form only after confirmed success
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          subject: 'Operations & Analytics Discussion',
+          message: '',
+          permission: false,
+          botcheck: ''
+        });
+      } else {
+        setStatusMessage({
+          type: 'error',
+          text: data?.message || 'Unable to deliver message at this time. Please try again or use the Direct Email link.'
+        });
+      }
+    } catch {
+      setStatusMessage({
+        type: 'error',
+        text: 'Network connection error. Please check your connection or reach out directly at vithun2701@gmail.com.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -168,14 +203,16 @@ Email: ${formData.email.trim()}`;
             </div>
           </div>
 
-          {/* Status / Honest Guidance Feedback Banner */}
+          {/* Status Feedback Banner */}
           {statusMessage && (
             <div 
               role="alert" 
               className={`p-4 rounded-xl text-xs font-mono mb-8 border transition-all ${
                 statusMessage.type === 'error' 
                   ? 'bg-[#532E26] border-amber-500/80 text-amber-200' 
-                  : 'bg-[#3B211B] border-[#6B352A] text-[#F7EEDB]'
+                  : statusMessage.type === 'success'
+                    ? 'bg-[#2E3B21] border-[#FFF1A6]/60 text-[#FFF1A6]'
+                    : 'bg-[#3B211B] border-[#6B352A] text-[#F7EEDB]'
               }`}
             >
               <div className="flex items-start gap-2.5">
@@ -187,6 +224,19 @@ Email: ${formData.email.trim()}`;
 
           {/* Form */}
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-8 md:gap-12 w-full">
+            {/* Honeypot field for bot spam prevention */}
+            <div className="hidden" aria-hidden="true">
+              <label htmlFor="botcheck">Leave this field blank</label>
+              <input 
+                type="text" 
+                id="botcheck" 
+                name="botcheck" 
+                value={formData.botcheck} 
+                onChange={handleChange} 
+                tabIndex={-1} 
+                autoComplete="off" 
+              />
+            </div>
             <div className="flex flex-col md:flex-row gap-8 md:gap-16 w-full">
               
               {/* Left Column */}
@@ -339,12 +389,20 @@ Email: ${formData.email.trim()}`;
 
                 <button 
                   type="submit" 
-                  className="px-8 py-3.5 rounded bg-[#6B352A] hover:bg-[#824B3D] text-[#FFF1A6] border border-[#FFF1A6]/40 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all duration-300 group whitespace-nowrap shadow-[0_0_25px_rgba(107,53,42,0.7)] hover:scale-105 active:scale-95"
+                  disabled={isSubmitting}
+                  className="px-8 py-3.5 rounded bg-[#6B352A] hover:bg-[#824B3D] disabled:opacity-60 disabled:cursor-not-allowed text-[#FFF1A6] border border-[#FFF1A6]/40 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all duration-300 group whitespace-nowrap shadow-[0_0_25px_rgba(107,53,42,0.7)] hover:scale-105 active:scale-95"
                 >
-                  <span>Compose Email</span>
-                  <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <span>{isSubmitting ? 'Transmitting...' : 'Send Message'}</span>
+                  {isSubmitting ? (
+                    <svg className="w-4 h-4 animate-spin text-[#FFF1A6]" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  )}
                 </button>
               </div>
 

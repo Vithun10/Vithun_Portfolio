@@ -7,6 +7,7 @@ import { track } from '@vercel/analytics';
  * Allowed events:
  * - resume_download
  * - contact_click
+ * - contact_submit
  * - email_click
  * - linkedin_click
  * - github_click
