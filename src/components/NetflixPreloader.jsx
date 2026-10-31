@@ -4,12 +4,34 @@ import { gsap } from 'gsap';
 const MinimalPreloader = ({ onComplete }) => {
   const preloaderRef = useRef(null);
   const contentRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+  const hasCompletedRef = useRef(false);
+
+  // Keep callback ref current without re-triggering the timeline effect
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
-    const tl = gsap.timeline({
-      onComplete: () => {
-        if (onComplete) onComplete();
+    let fallbackTimer = null;
+
+    // Single-execution dismissal handler preventing race conditions
+    const handleDismiss = () => {
+      if (hasCompletedRef.current) return;
+      hasCompletedRef.current = true;
+
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
       }
+
+      if (onCompleteRef.current) {
+        onCompleteRef.current();
+      }
+    };
+
+    const tl = gsap.timeline({
+      onComplete: handleDismiss
     });
 
     tl.set(preloaderRef.current, { autoAlpha: 1 })
@@ -31,7 +53,18 @@ const MinimalPreloader = ({ onComplete }) => {
         duration: 0.5,
         ease: "power2.inOut"
       });
-  }, [onComplete]);
+
+    // Defensive fallback: dismiss preloader if GSAP timeline stalls or fails to reach 100%
+    // 2300ms normal duration (0.8s in + 0.6s delay + 0.4s out + 0.5s fade) + 300ms buffer
+    fallbackTimer = setTimeout(handleDismiss, 2600);
+
+    return () => {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+      }
+      tl.kill();
+    };
+  }, []);
 
   return (
     <div
