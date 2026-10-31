@@ -49,13 +49,18 @@ const Skills = () => {
   const tickingRef = useRef(false);
   const lastActiveRef = useRef(-1);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const showSwipeHintRef = useRef(true);
 
   const handleScroll = (e) => {
     if (window.innerWidth >= 769) return;
 
-    // Immediately hide swipe indicator as soon as user begins horizontal interaction
-    if (showSwipeHint && e.target && e.target.scrollLeft > 15) {
-      setShowSwipeHint(false);
+    // Position-dependent swipe hint: visible only near carousel start (tolerance ~15px)
+    const scrollLeft = e.target?.scrollLeft ?? 0;
+    const isAtStart = scrollLeft <= 15;
+
+    if (showSwipeHintRef.current !== isAtStart) {
+      showSwipeHintRef.current = isAtStart;
+      setShowSwipeHint(isAtStart);
     }
 
     if (tickingRef.current) return;
